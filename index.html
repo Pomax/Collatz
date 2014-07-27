@@ -1,0 +1,304 @@
+<!doctype html>
+<html>
+
+  <head>
+    <!-- DOM manipulation, the kinder way -->
+    <script src="js/tiny-toolkit-min.js"></script>
+
+    <!-- page information -->
+    <meta charset="utf-8">
+    <title>The Collatz Conjecture</title>
+
+    <!-- styling -->
+    <link rel="stylesheet" media="screen" href="style.css">
+    <link rel="stylesheet" media="print" href="print.css">
+
+    <!-- JS API improvements -->
+    <script>
+      // give NodeList a .forEach() and .toArray(), because: seriously.
+      (function(p,n,a,f,t){n=n[p];a=a[p];n[f]=a[f];n[t]=function(){var
+        r=[];this[f](function(n){r.push(n);});return r;}}
+      ("prototype",NodeList,Array,"forEach","toArray"));
+    </script>
+
+    <!-- MathJax for beautiful LaTeX functions -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        displayAlign: "left",
+        displayIndent: "2em",
+        TeX: {
+          extensions: ["color.js"]
+        },
+        skipStartupTypeset: true
+      });
+    </script>
+
+    <!-- opengraph information -->
+    <meta property="og:title" content="The Collatz Conjecture">
+    <meta property="og:type" content="text">
+    <meta property="og:url" content="http://pomax.github.io/bezierinfo">
+    <meta property="og:description" content="A look at some of the properties of a neat little arithmetic puzzle in ℕ.">
+    <meta property="og:locale" content="en_GB">
+    <meta property="og:type" content="article">
+    <meta property="og:published_time" content="2014-07-26 12:00:00">
+    <meta property="og:author" content="Mike 'Pomax' Kamermans">
+    <meta property="og:section" content="Collatz Conjecture">
+    <meta property="og:tag" content="Collatz Conjecture">
+
+  </head>
+
+
+  <body>
+
+    <img id="ribbonimg" src="images/ribbon.png" alt="This page on GitHub" border=0 usemap="#githubmap">
+    <map name="githubmap">
+      <area shape="poly" coords="30,0, 200,0, 200,114" href="http://github.com/pomax/Collatz" alt="This page on GitHub">
+    </map>
+
+    <!-- actual article -->
+    <article>
+
+      <header>
+        <h1>The Collatz Conjecture</h1>
+        <h4>Note: This article is still being written</h4>
+      </header>
+
+      <section id="preface">
+        <p>The <a href="https://en.wikipedia.org/wiki/Collatz_conjecture">Collatz Conjecture</a> is the first challenge I was
+        ever genuinely presented with. We're not talking the "I dare you to ..." or "If you don't ... you will ...", but the kind
+        where someone explains a challenging problem and all you can do is sit there and go "... challenge accepted". I was a
+        first year student (well, technically third, but I switched universities so first year at my new university) at the
+        University of Amsterdam, embarking on a five year study of Artificial Intelligence, and the dean of faculty (yes, A.I.
+        was, and hopefully still is, its own faculty. It's not just computer science with a few electives) did the standard
+        welcome speech, but he did it well. He talked about complexities, the travelling salesman problem, A*, and many other
+        things but what caught me was the Collatz Conjecture. It's a stupidly simple statement: pick any integer number; if it's even
+        divide it by two, and if it's odd multiply it by three and add one. No matter which number you start with, as long as
+        you followed those two rules you will always end up at 1. After dropping this seemingly insignificant bombshell he
+        finished it up with "it's a good example of a simple problem that is almost intractibly difficult to actually prove",
+        and then went on to discuss optimizing algorithms by analysing loop invariants. I should point out this was before
+        the Netherlands got sucked into the European Bachelor/Masters nonsense and a five year study meant "welcome to you're
+        serious about learning some shit, let's not joke around, you're paying for this".</p>
+
+        <p>I like the Collatz conjecture. I like it a lot. Every few months I'll try to figure out something new about the
+        sequence of numbers associated with it, and it's just one of those dumb recreational math things you can work on
+        when you get bored with everything else. It's still there. Unsolved. So simple. Two rules. Unproven... and it doesn't
+        even use any complicated mathematical notions. It's just the natural numbers, and the basic operations of arithmetic.
+        What deep magic lies here....?</p>
+      </section>
+
+      <section id="introduction">
+        <h2 data-num="1">Introduction</h2>
+
+        <p>So, the Collatz Conjecture. Let's formalize it a little, because it's a really simple algorithm so let's write it
+        out as one.</p>
+
+        <ul>
+          <li>Pick a number <b>n</b>. Literally any number <b>n</b> as long as it's an integer number (i.e. a whole number)
+            and greater than 1.</li>
+          <li>While <b>n</b> > 1:
+            <ul>
+			  <li>If <b>n</b> is even, set <b>n ← n / 2</b></li>
+			  <li>If <b>n</b> is odd, set <b>n ← 3 * n + 1 </b></li>
+			</ul>
+	      </li>
+	      <li>this loop always terminates, with <b>n</b> equal to 1</li>
+        </ul>
+
+        <p>That's it. The conjecture is "this algorithm is correct".</p>
+      </section>
+
+      <section id="resolution">
+        <h2 data-num="1">So, let's resolve some chains to see where this takes us.</h2>
+
+        <ul>
+	      <li>1</li>
+	      <li>2 → 1</li>
+	      <li>3 → 10 → 5 → 16 → 8 → 4 → 2 → 1</li>
+	      <li>4 → 2 → 1</li>
+	      <li>5 → 16 → 8 → 4 → 2 → 1</li>
+	      <li>6 → 3 → 10 → 5 → 16 → 8 → 4 → 2 → 1</li>
+	      <li>7 → 22 → 11 → 34 → 17 → 52 → 26 → 13 → 40 → 20 → 10 → 5 → 16 → 8 → 4 → 2 → 1</li>
+	      <li>8 → 4 → 2 → 1</li>
+	      <li>9 → 28 → 14 → 7 → 22 → 11 → 34 → 17 → 52 → 26 → 13 → 40 → 20 → 10 → 5 → 16 → 8 → 4 → 2 → 1</li>
+	      <li>10 → 5 → 16 → 8 → 4 → 2 → 1</li>
+        </ul>
+
+        <p> Not all that far, really. We need a better view on what this series is doing.</p>
+      </section>
+
+      <section id="generating">
+        <h2 data-num="1">Generating Collatz sequences</h2>
+
+        <p>What if we look at it from the other way? Instead of taking a number and reducing it to 1, let's
+        take a number and see which Collatz sequence it can generate. If we do we can use the following algorithm:</p>
+
+        <ul>
+          <li>Pick an integer number <b>n</b></li>
+          <li>generate with it the number <b>n*2</b>. This is a Collantz sequence number.</li>
+          <li>generate with it the number <b>(n-1)/3</b>. If integer, this is a Collantz sequence number.</li>
+        </ul>
+
+        <p>What does that give us?</p>
+
+        <ul>
+	      <li>1 → 2 and 0</li>
+	      <li>2 → 4 and 1/3</li>
+	      <li>3 → 6 and 2/3</li>
+	      <li>4 → 8 and 1</li>
+	      <li>5 → 10 and 4/3</li>
+	      <li>6 → 12 and 5/3</li>
+	      <li>7 → 14 and 2</li>
+	      <li>8 → 16 and 7/3</li>
+	      <li>9 → 18 and 8/3</li>
+	      <li>10 → 20 and 3</li>
+	      <li>11 → 22 and 10/3</li>
+	      <li>12 → 24 and 11/3</li>
+	      <li>13 → 26 and 4</li>
+	      <li>14 → 28 and 13/3</li>
+	      <li>15 → 30 and 14/3</li>
+	      <li>16 → 32 and 5</li>
+	      <li>17 → 34 and 16/3</li>
+	      <li>18 → 36 and 17/3</li>
+	      <li>19 → 38 and 6</li>
+	      <li>20 → 40 and 19/3</li>
+	      <li>...</li>
+        </ul>
+
+        <p>Interesting. We see that only 1 mod 3 generates an integer number (which makes sense), that 1 mod 6 generates
+        an even integer, and that 4 mod 6 generates an odd integer. We also see that this expansion doesn't quite generate
+        ℕ sparsely (meaning some integers are repeated), and we get some unique numbers that don't matter for the Collatz
+        conjecture, but combined with ℕ means we're spanning ℕ/3 (which has, amusing, the same number of elements in it
+        as ℕ).</p>
+
+		<p>let's rephrase the conjecture to something simpler, bearing this list in mind...</p>
+
+        <ul>
+          <li>for any <b>n</b>, <b>n</b> &gt; 1, there is a finite path to some <b>m</b>, <b>n</b> &gt; <b>m</b> &ge; 1.
+        </ul>
+
+        <p>Applying this recursively (remember: for <em>any</em> <b>n</b>) means we'll always arrive at 1.</p>
+
+        <p>for even numbers this rule is trivially upheld; the nature of division by "more than 1" means that the result
+        of a division is strictly lower that the starting value. As such, all even numbers already follow this part of
+        the conjecture.</p>
+
+        <p>For odd numbers the challenge is to now proove that there are finite length paths from odd number <b>n</b> to
+        <em>any</em> lower number <b>m</b>. Let's do a quick investigation</p>
+
+<pre>  4 → 8 - 1
+ 10 → 20 - 3		m < n in 8 steps
+ 16 → 32 - 5		m < n in 5 steps
+ 22 → 44 - 7		m < n in 13 steps
+ 28 → 56 - 9		m < n in 5 steps
+ 34 → 68 - 11		m < n in 10 steps
+ 40 → 80 - 13		m < n in 5 steps
+ 46 → 92 - 15		m < n in 13 steps
+ 52 → 104 - 17		m < n in 5 steps
+ 58 → 116 - 19		m < n in 8 steps
+ 64 → 128 - 21		m < n in 5 steps
+ 70 → 140 - 23		m < n in 10 steps
+ 76 → 152 - 25		m < n in 5 steps
+ 82 → 164 - 27		m < n in 98 steps
+ 88 → 176 - 29		m < n in 5 steps
+ 94 → 188 - 31		m < n in 93 steps
+100 → 200 - 33		m < n in 5 steps
+106 → 212 - 35		m < n in 8 steps
+112 → 224 - 37		m < n in 5 steps
+118 → 236 - 39		m < n in 15 steps
+124 → 248 - 41		m < n in 5 steps
+130 → 260 - 43		m < n in 10 steps
+136 → 272 - 45		m < n in 5 steps
+142 → 284 - 47		m < n in 90 steps
+148 → 296 - 49		m < n in 5 steps
+154 → 308 - 51		m < n in 8 steps
+160 → 320 - 53		m < n in 5 steps
+166 → 332 - 55		m < n in 10 steps
+172 → 344 - 57		m < n in 5 steps
+178 → 356 - 59		m < n in 13 steps
+184 → 368 - 61		m < n in 5 steps
+190 → 380 - 63		m < n in 90 steps
+196 → 392 - 65		m < n in 5 steps
+202 → 404 - 67		m < n in 8 steps
+208 → 416 - 69		m < n in 5 steps
+214 → 428 - 71		m < n in 85 steps
+</pre>
+
+        <p>Interesting. Every 16 mod 12th number has a path of length 5. If we remove those, we see another modulo:</p>
+
+<pre>4 → 8 - 1		[*]
+10 → 20 - 3		[*]	 v < b in 8 steps
+22 → 44 - 7		[*]	 v < b in 13 steps
+34 → 68 - 11		[*]	 v < b in 10 steps
+46 → 92 - 15		[*]	 v < b in 13 steps
+58 → 116 - 19		[*]	 v < b in 8 steps
+70 → 140 - 23		[*]	 v < b in 10 steps
+82 → 164 - 27		[*]	 v < b in 98 steps
+94 → 188 - 31		[*]	 v < b in 93 steps
+106 → 212 - 35		[*]	 v < b in 8 steps
+118 → 236 - 39		[*]	 v < b in 15 steps
+130 → 260 - 43		[*]	 v < b in 10 steps
+142 → 284 - 47		[*]	 v < b in 90 steps
+154 → 308 - 51		[*]	 v < b in 8 steps
+166 → 332 - 55		[*]	 v < b in 10 steps
+178 → 356 - 59		[*]	 v < b in 13 steps
+190 → 380 - 63		[*]	 v < b in 90 steps
+202 → 404 - 67		[*]	 v < b in 8 steps
+214 → 428 - 71		[*]	 v < b in 85 steps
+226 → 452 - 75		[*]	 v < b in 10 steps
+238 → 476 - 79		[*]	 v < b in 15 steps
+250 → 500 - 83		[*]	 v < b in 8 steps
+262 → 524 - 87		[*]	 v < b in 10 steps
+274 → 548 - 91		[*]	 v < b in 75 steps
+286 → 572 - 95		[*]	 v < b in 15 steps
+298 → 596 - 99		[*]	 v < b in 8 steps
+310 → 620 - 103		[*]	 v < b in 70 steps
+322 → 644 - 107		[*]	 v < b in 10 steps
+334 → 668 - 111		[*]	 v < b in 52 steps
+346 → 692 - 115		[*]	 v < b in 8 steps
+358 → 716 - 119		[*]	 v < b in 10 steps
+370 → 740 - 123		[*]	 v < b in 15 steps
+382 → 764 - 127		[*]	 v < b in 26 steps
+394 → 788 - 131		[*]	 v < b in 8 steps
+406 → 812 - 135		[*]	 v < b in 13 steps
+</pre>
+
+        <p>paths of length 8 seem to occur at 10 mod 48... let's plot some more:</p>
+
+<pre> 5: {16} mod 12
+ 8: {10} mod 48
+10: {34, 70} mod 96
+13: {22,46,178} mod 384
+15: {118,238,286,371,526,598,658,866} mod 768
+18: {862,1042,1102,1270,1522,1726,1750,2206,2446,2770,2926,2998} mod 3072
+21: {...31 bases...} mod 12288
+23: {...85 bases...} mod 24576
+26: {...173 bases...} mod 98304
+</pre>
+
+        <p>Do these modulations make sense?</p>
+
+<pre> 5: mod 12 x 1
+ 8: mod 12 x 4
+10: mod 12 x 8
+13: mod 12 x 32
+15: mod 12 x 64
+18: mod 12 x 256
+21: mod 12 x 1024
+23: mod 12 x 2048
+26: mod 12 x 8192
+</pre>
+
+        <p>sort of? but where are 2, 16, 128, 512, 4096 etc? Where are these gaps coming from?</p>
+
+      </section>
+
+
+      <footer id="copyright">
+        This article is © 2014 to me, Mike "Pomax" Kamermans, but any code used and linked
+        is in the public domain. Go do something cool with it.
+      </footer>
+    </article>
+
+
+  </body>
+</html>
