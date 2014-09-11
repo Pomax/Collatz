@@ -1,40 +1,49 @@
-int j = 0;
-int prev = 1;
-int max = 500000;
-for(int i=1; i<max; i++) {
-  int a = 2*i;
-  int b = i-1;
-  boolean b2 = (b%3 == 0);
-  String s = b+"/3";
-  String suffix = "";
-  int t = 1;
-  if(b2) {
-    b = b/3;
-    s = "" + b;
-    if(b % 2 == 1) {
-      //suffix = " => " + ((3*b + 1) / 2);
+HashMap<Integer, ArrayList<Integer>> LUT = new HashMap<Integer, ArrayList<Integer>>();
+HashMap<Integer, Integer> LUT2 = new HashMap<Integer, Integer>();
+
+ArrayList<Integer> generate(int i) {
+  ArrayList<Integer> numbers = new ArrayList<Integer>();
+  while(i>1) {
+    if(LUT.get(i) != null) {
+      numbers.addAll(LUT.get(i));
+      break;
     }
-    if ((i - 10) % 6 == 0) {
-      suffix += "\t\t[*]";
-
-      int v = b;
-      while(t++<1000) {
-        if (v < b) {
-          suffix += "\t v < b in " + t + " steps";
-          break;
-        }
-        v = (v % 2 == 0) ? v/2 : 3 * v + 1;
-      }
-
-   //   println(i + " → " + a + " - " + s + suffix);// + ", step: " + (i-prev));
-
+    numbers.add(i);
+    i = (i%2==0) ? i/2 : 3*i + 1;
+    if(i==1) {
+      numbers.add(1);
     }
   }
-
-  if (t==21) {   
-    println(j++ + "> " + i + "\t" + a + " - " + s + suffix + ", step: " + (i-prev));
-    prev = i;
-  }
+  return numbers;
 }
 
-exit();
+int findMinSteps(ArrayList<Integer> list) {
+  for(int t=0; t<list.size(); t++) {  
+    if (list.get(t) < list.get(0)) return t;
+  }
+  return list.size();
+}
+
+void draw() {
+  int maxSteps = 400;
+  int prev = 0;
+  for (int i=0; i<maxSteps; i++) {
+    ArrayList<Integer> result = generate(i); 
+    LUT.put(i, result);
+    int steps = findMinSteps(result);
+    LUT2.put(i,steps);
+    if(i%2==1 && steps == 11) {
+      print(" " + i + ": m < n reached in " + steps + " steps (out of " + (result.size() - 1) +")");
+      if(prev>0) {
+        int modulo = i - prev;
+        print(" modulo = "+modulo);
+      }
+      prev = i;
+      println();
+    }
+  }
+  
+  
+  exit();
+}
+

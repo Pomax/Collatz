@@ -28,8 +28,7 @@
         displayIndent: "2em",
         TeX: {
           extensions: ["color.js"]
-        },
-        skipStartupTypeset: true
+        }
       });
     </script>
 
@@ -105,32 +104,34 @@
         </ul>
 
         <p>That's it. The conjecture is "this algorithm is correct".</p>
-      </section>
 
-      <section id="resolution">
-        <h2 data-num="1">So, let's resolve some chains to see where this takes us.</h2>
+        <p>So, let's resolve some chains to see where this takes us:</p>
 
-        <ul>
-	      <li>1</li>
-	      <li>2 → 1</li>
-	      <li>3 → 10 → 5 → 16 → 8 → 4 → 2 → 1</li>
-	      <li>4 → 2 → 1</li>
-	      <li>5 → 16 → 8 → 4 → 2 → 1</li>
-	      <li>6 → 3 → 10 → 5 → 16 → 8 → 4 → 2 → 1</li>
-	      <li>7 → 22 → 11 → 34 → 17 → 52 → 26 → 13 → 40 → 20 → 10 → 5 → 16 → 8 → 4 → 2 → 1</li>
-	      <li>8 → 4 → 2 → 1</li>
-	      <li>9 → 28 → 14 → 7 → 22 → 11 → 34 → 17 → 52 → 26 → 13 → 40 → 20 → 10 → 5 → 16 → 8 → 4 → 2 → 1</li>
-	      <li>10 → 5 → 16 → 8 → 4 → 2 → 1</li>
-        </ul>
+        <ol>
+  	      <li>done</li>
+  	      <li>→ 1</li>
+  	      <li>→ 10 → 5 → 16 → 8 → 4 → 2 → 1</li>
+  	      <li>→ 2 → 1</li>
+  	      <li>→ 16 → 8 → 4 → 2 → 1</li>
+  	      <li>→ 3 → 10 → 5 → 16 → 8 → 4 → 2 → 1</li>
+  	      <li>→ 22 → 11 → 34 → 17 → 52 → 26 → 13 → 40 → 20 → 10 → 5 → 16 → 8 → 4 → 2 → 1</li>
+  	      <li>→ 4 → 2 → 1</li>
+  	      <li>→ 28 → 14 → 7 → 22 → 11 → 34 → 17 → 52 → 26 → 13 → 40 → 20 → 10 → 5 → 16 → 8 → 4 → 2 → 1</li>
+  	      <li>→ 5 → 16 → 8 → 4 → 2 → 1</li>
+        </ol>
 
-        <p> Not all that far, really. We need a better view on what this series is doing.</p>
+        <p>The story checks out for the numbers 1 through 10, but that's not really going to do us much good.
+          We'd need to check every number, and there are an infinite number of numbers, so that's never going
+          to yield a proof. Maths is harsh that way.</p>
       </section>
 
       <section id="generating">
-        <h2 data-num="1">Generating Collatz sequences</h2>
+        <h2>Generating Collatz sequences</h2>
 
         <p>What if we look at it from the other way? Instead of taking a number and reducing it to 1, let's
-        take a number and see which Collatz sequence it can generate. If we do we can use the following algorithm:</p>
+        take a number and see which Collatz sequences it can generate. It might not be useful, but never look
+        at a mathematical puzzle from a single perspective. The more perspectives you can come up with, the more
+        possible inroads you have to understanding why it works.</p>
 
         <ul>
           <li>Pick an integer number <b>n</b></li>
@@ -138,160 +139,417 @@
           <li>generate with it the number <b>(n-1)/3</b>. If integer, this is a Collantz sequence number.</li>
         </ul>
 
-        <p>What does that give us?</p>
+        <p>This rephrasing is equivalent to the Collatz conjecture if we add "this procedure generates ℕ (all natural
+          numbers)". Let's look at we get:</p>
+
+        <ol>
+  	      <li>→ 2 and 0</li>
+  	      <li>→ 4 and 1/3</li>
+  	      <li>→ 6 and 2/3</li>
+  	      <li>→ 8 and 1</li>
+  	      <li>→ 10 and 4/3</li>
+  	      <li>→ 12 and 5/3</li>
+  	      <li>→ 14 and 2</li>
+  	      <li>→ 16 and 7/3</li>
+  	      <li>→ 18 and 8/3</li>
+  	      <li>→ 20 and 3</li>
+  	      <li>→ 22 and 10/3</li>
+  	      <li>→ 24 and 11/3</li>
+  	      <li>→ 26 and 4</li>
+  	      <li>→ 28 and 13/3</li>
+  	      <li>→ 30 and 14/3</li>
+  	      <li>→ 32 and 5</li>
+  	      <li>→ 34 and 16/3</li>
+  	      <li>→ 36 and 17/3</li>
+  	      <li>→ 38 and 6</li>
+  	      <li>→ 40 and 19/3</li>
+  	      <li>...</li>
+        </ol>
+
+        <p>Interesting.</p>
+
+        <p>We see that only 1 mod 3 generates an integer number (which makes sense), that 1 mod 6 generates
+        an even integer, and that 4 mod 6 generates an odd integer. That's potentially important information.</p>
+
+        <p>We also see that this expansion doesn't quite generate ℕ sparsely: some integers are repeated: 1 and 7
+          both generate 2, 2 and 13 both generate 4, 3 and 19 both generate 6, and more generally <b>k</b> and
+          <b>6k+1</b> both generate <b>2k</b>. That's useful information because it means we can ignore certain
+          paths when we want to check for "Collatziness", although only if we're thinking about it from the
+          generative perspective, because under "normal" circumstances we're always reducing <b>2k</b> to <b>k</b>.</p>
+
+        <p>We also we get some unique numbers that don't matter for the Collatz conjecture, but combined with ℕ
+          means we're spanning ℕ/3 (which has, perhaps amusing if you're not too familiar with infinities, the
+          same number of elements in it as ℕ).</p>
+      </section>
+
+      <section>
+        <h2>Finding a more proof-friendly phrasing of the conjecture</h2>
+
+		    <p>Conjectures of the type "this eventually works" is hard, so maybe we can rephrase the conjecture to
+          something that easier to work with, or solves the problem by mathematical analogy, giving a different
+          problem to solve that equates to solving the original problem. Looking at the Collatz sequences, a
+          shortcut observation is that if we can get from any number <b>n</b> to the number 1, then we can rephrase
+          that to the claim that for any <b>n</b> there is a finite-length path to some number <b>m</b> that's
+          lower than <b>n</b>. In the worst case, <b>m</b> is 1, because that's the last step, but hopefully it's
+          some number closer to <b>n</b> and we can get to it nice and quickly.</p>
+
+          <p>Using that idea, let's rephrase the conjecture:</p>
 
         <ul>
-	      <li>1 → 2 and 0</li>
-	      <li>2 → 4 and 1/3</li>
-	      <li>3 → 6 and 2/3</li>
-	      <li>4 → 8 and 1</li>
-	      <li>5 → 10 and 4/3</li>
-	      <li>6 → 12 and 5/3</li>
-	      <li>7 → 14 and 2</li>
-	      <li>8 → 16 and 7/3</li>
-	      <li>9 → 18 and 8/3</li>
-	      <li>10 → 20 and 3</li>
-	      <li>11 → 22 and 10/3</li>
-	      <li>12 → 24 and 11/3</li>
-	      <li>13 → 26 and 4</li>
-	      <li>14 → 28 and 13/3</li>
-	      <li>15 → 30 and 14/3</li>
-	      <li>16 → 32 and 5</li>
-	      <li>17 → 34 and 16/3</li>
-	      <li>18 → 36 and 17/3</li>
-	      <li>19 → 38 and 6</li>
-	      <li>20 → 40 and 19/3</li>
-	      <li>...</li>
+          <li>for any <b>n</b>, <b>n</b> &gt; 1, there is a finite path to some <b>m</b>, 1 &le; <b>m</b> &lt; <b>n</b>.
         </ul>
 
-        <p>Interesting. We see that only 1 mod 3 generates an integer number (which makes sense), that 1 mod 6 generates
-        an even integer, and that 4 mod 6 generates an odd integer. We also see that this expansion doesn't quite generate
-        ℕ sparsely (meaning some integers are repeated), and we get some unique numbers that don't matter for the Collatz
-        conjecture, but combined with ℕ means we're spanning ℕ/3 (which has, amusing, the same number of elements in it
-        as ℕ).</p>
+        <p>The Collatz conjecture is then fulfilled if this rule holds recursively: if we can find some <b>m</b> that's
+          smaller than <b>n</b> but higher than 1, and this rule holds, then we can find another <b>m'</b> that's
+          smaller than <b>m</b>, and keep doing so until we reach 1.</p>
 
-		<p>let's rephrase the conjecture to something simpler, bearing this list in mind...</p>
+        <p>So let's run a quick list of numbers to see whether this rephrasing has simplified the problem we're
+          trying to solve. First off, we can immediately see that for even numbers this rule is trivially upheld:
+          the nature of division by "more than 1" means that the result of a division is strictly lower that the
+          starting value. As such, all even numbers already follow this part of the conjecture. Solution space
+          halved simply by picking better phrasing, awesome!</p>
 
-        <ul>
-          <li>for any <b>n</b>, <b>n</b> &gt; 1, there is a finite path to some <b>m</b>, <b>n</b> &gt; <b>m</b> &ge; 1.
-        </ul>
+        <p>For odd numbers the challenge is to now prove that there are finite length paths from any odd number <b>n</b>
+          to lower numbers <b>m</b>. So, again, let's do a quick investigation using the power of a quick program to
+          generate us some numbers:</p>
 
-        <p>Applying this recursively (remember: for <em>any</em> <b>n</b>) means we'll always arrive at 1.</p>
-
-        <p>for even numbers this rule is trivially upheld; the nature of division by "more than 1" means that the result
-        of a division is strictly lower that the starting value. As such, all even numbers already follow this part of
-        the conjecture.</p>
-
-        <p>For odd numbers the challenge is to now proove that there are finite length paths from odd number <b>n</b> to
-        <em>any</em> lower number <b>m</b>. Let's do a quick investigation</p>
-
-<pre>  4 → 8 - 1
- 10 → 20 - 3		m < n in 8 steps
- 16 → 32 - 5		m < n in 5 steps
- 22 → 44 - 7		m < n in 13 steps
- 28 → 56 - 9		m < n in 5 steps
- 34 → 68 - 11		m < n in 10 steps
- 40 → 80 - 13		m < n in 5 steps
- 46 → 92 - 15		m < n in 13 steps
- 52 → 104 - 17		m < n in 5 steps
- 58 → 116 - 19		m < n in 8 steps
- 64 → 128 - 21		m < n in 5 steps
- 70 → 140 - 23		m < n in 10 steps
- 76 → 152 - 25		m < n in 5 steps
- 82 → 164 - 27		m < n in 98 steps
- 88 → 176 - 29		m < n in 5 steps
- 94 → 188 - 31		m < n in 93 steps
-100 → 200 - 33		m < n in 5 steps
-106 → 212 - 35		m < n in 8 steps
-112 → 224 - 37		m < n in 5 steps
-118 → 236 - 39		m < n in 15 steps
-124 → 248 - 41		m < n in 5 steps
-130 → 260 - 43		m < n in 10 steps
-136 → 272 - 45		m < n in 5 steps
-142 → 284 - 47		m < n in 90 steps
-148 → 296 - 49		m < n in 5 steps
-154 → 308 - 51		m < n in 8 steps
-160 → 320 - 53		m < n in 5 steps
-166 → 332 - 55		m < n in 10 steps
-172 → 344 - 57		m < n in 5 steps
-178 → 356 - 59		m < n in 13 steps
-184 → 368 - 61		m < n in 5 steps
-190 → 380 - 63		m < n in 90 steps
-196 → 392 - 65		m < n in 5 steps
-202 → 404 - 67		m < n in 8 steps
-208 → 416 - 69		m < n in 5 steps
-214 → 428 - 71		m < n in 85 steps
+<pre> 1: excluded from testing
+ 3: m < n reached in  6 steps (out of   7 for the full path to 1)
+ 5: m < n reached in  3 steps (out of   5 for the full path to 1)
+ 7: m < n reached in 11 steps (out of  16 for the full path to 1)
+ 9: m < n reached in  3 steps (out of  19 for the full path to 1)
+11: m < n reached in  8 steps (out of  14 for the full path to 1)
+13: m < n reached in  3 steps (out of   9 for the full path to 1)
+15: m < n reached in 11 steps (out of  17 for the full path to 1)
+17: m < n reached in  3 steps (out of  12 for the full path to 1)
+19: m < n reached in  6 steps (out of  20 for the full path to 1)
+21: m < n reached in  3 steps (out of   7 for the full path to 1)
+23: m < n reached in  8 steps (out of  15 for the full path to 1)
+25: m < n reached in  3 steps (out of  23 for the full path to 1)
+27: m < n reached in 96 steps (out of 111 for the full path to 1)
+29: m < n reached in  3 steps (out of  18 for the full path to 1)
+31: m < n reached in 91 steps (out of 106 for the full path to 1)
+33: m < n reached in  3 steps (out of  26 for the full path to 1)
+35: m < n reached in  6 steps (out of  13 for the full path to 1)
+37: m < n reached in  3 steps (out of  21 for the full path to 1)
+39: m < n reached in 13 steps (out of  34 for the full path to 1)
+41: m < n reached in  3 steps (out of 109 for the full path to 1)
+43: m < n reached in  8 steps (out of  29 for the full path to 1)
+45: m < n reached in  3 steps (out of  16 for the full path to 1)
+47: m < n reached in 88 steps (out of 104 for the full path to 1)
+49: m < n reached in  3 steps (out of  24 for the full path to 1)
+51: m < n reached in  6 steps (out of  24 for the full path to 1)
+53: m < n reached in  3 steps (out of  11 for the full path to 1)
+55: m < n reached in  8 steps (out of 112 for the full path to 1)
+57: m < n reached in  3 steps (out of  32 for the full path to 1)
+59: m < n reached in 11 steps (out of  32 for the full path to 1)
+61: m < n reached in  3 steps (out of  19 for the full path to 1)
+63: m < n reached in 88 steps (out of 107 for the full path to 1)
+65: m < n reached in  3 steps (out of  27 for the full path to 1)
+67: m < n reached in  6 steps (out of  27 for the full path to 1)
+69: m < n reached in  3 steps (out of  14 for the full path to 1)
+71: m < n reached in 83 steps (out of 102 for the full path to 1)
+73: m < n reached in  3 steps (out of 115 for the full path to 1)
+75: m < n reached in  8 steps (out of  14 for the full path to 1)
+77: m < n reached in  3 steps (out of  22 for the full path to 1)
+79: m < n reached in 13 steps (out of  35 for the full path to 1)
+81: m < n reached in  3 steps (out of  22 for the full path to 1)
+83: m < n reached in  6 steps (out of 110 for the full path to 1)
+85: m < n reached in  3 steps (out of   9 for the full path to 1)
+87: m < n reached in  8 steps (out of  30 for the full path to 1)
+89: m < n reached in  3 steps (out of  30 for the full path to 1)
+91: m < n reached in 73 steps (out of  92 for the full path to 1)
+93: m < n reached in  3 steps (out of  17 for the full path to 1)
+95: m < n reached in 13 steps (out of 105 for the full path to 1)
+97: m < n reached in  3 steps (out of 118 for the full path to 1)
+99: m < n reached in  6 steps (out of  25 for the full path to 1)
 </pre>
 
-        <p>Interesting. Every 16 mod 12th number has a path of length 5. If we remove those, we see another modulo:</p>
+        <p>Interesting...</p>
 
-<pre>4 → 8 - 1		[*]
-10 → 20 - 3		[*]	 v < b in 8 steps
-22 → 44 - 7		[*]	 v < b in 13 steps
-34 → 68 - 11		[*]	 v < b in 10 steps
-46 → 92 - 15		[*]	 v < b in 13 steps
-58 → 116 - 19		[*]	 v < b in 8 steps
-70 → 140 - 23		[*]	 v < b in 10 steps
-82 → 164 - 27		[*]	 v < b in 98 steps
-94 → 188 - 31		[*]	 v < b in 93 steps
-106 → 212 - 35		[*]	 v < b in 8 steps
-118 → 236 - 39		[*]	 v < b in 15 steps
-130 → 260 - 43		[*]	 v < b in 10 steps
-142 → 284 - 47		[*]	 v < b in 90 steps
-154 → 308 - 51		[*]	 v < b in 8 steps
-166 → 332 - 55		[*]	 v < b in 10 steps
-178 → 356 - 59		[*]	 v < b in 13 steps
-190 → 380 - 63		[*]	 v < b in 90 steps
-202 → 404 - 67		[*]	 v < b in 8 steps
-214 → 428 - 71		[*]	 v < b in 85 steps
-226 → 452 - 75		[*]	 v < b in 10 steps
-238 → 476 - 79		[*]	 v < b in 15 steps
-250 → 500 - 83		[*]	 v < b in 8 steps
-262 → 524 - 87		[*]	 v < b in 10 steps
-274 → 548 - 91		[*]	 v < b in 75 steps
-286 → 572 - 95		[*]	 v < b in 15 steps
-298 → 596 - 99		[*]	 v < b in 8 steps
-310 → 620 - 103		[*]	 v < b in 70 steps
-322 → 644 - 107		[*]	 v < b in 10 steps
-334 → 668 - 111		[*]	 v < b in 52 steps
-346 → 692 - 115		[*]	 v < b in 8 steps
-358 → 716 - 119		[*]	 v < b in 10 steps
-370 → 740 - 123		[*]	 v < b in 15 steps
-382 → 764 - 127		[*]	 v < b in 26 steps
-394 → 788 - 131		[*]	 v < b in 8 steps
-406 → 812 - 135		[*]	 v < b in 13 steps
+        <p>Generating these sequences is revealing patterns in the path lengths that fulfill the rephrased
+          Collatz property. For instance, even if all the full path lenghts to reach 1 differ, we can see that
+          every number <b>5 mod 4</b> has a path of length 3 from <b>n</b> to some <b>m &lt; n</b>. If we can
+          say <em>why</em> then we have an excellent basis for reducing the solution space further and further,
+          ideally to the point where it's empty.<p>
+
+        <p>We see a few more possibly repeating steps, so let's script a little more and get some more data
+          on which numbers (modulo which other numbers) have a known path length:</p>
+
+<pre>
+path length 3 : {5} mod 4
+path length 6 : {3} mod 16
+path length 8 : {11, 23} mod 32
+path length 11: {7,15,59} mod 192
+path length 13: {39,79,95,123,175,199,219,288} mod 256
+path length 16: {287,347,367,423,507,575,583,735,815,923,975,999} mod 1024
+path length 19: {...31 bases...} mod 4096
+path length 21: {...85 bases...} mod 8192
+path length 24: {...173 bases...} mod 32768
 </pre>
 
-        <p>paths of length 8 seem to occur at 10 mod 48... let's plot some more:</p>
+        <p>Do these modulations make sense? They look like powers of two, but that 192 shows that they're
+          not, so let's not get side tracked there. What about the base numbers? The first few look like
+          they might all be primes, but the 15 and 39 show that's not true either.</p>
 
-<pre> 5: {16} mod 12
- 8: {10} mod 48
-10: {34, 70} mod 96
-13: {22,46,178} mod 384
-15: {118,238,286,371,526,598,658,866} mod 768
-18: {862,1042,1102,1270,1522,1726,1750,2206,2446,2770,2926,2998} mod 3072
-21: {...31 bases...} mod 12288
-23: {...85 bases...} mod 24576
-26: {...173 bases...} mod 98304
-</pre>
+        <p>Another problem is that even if we can find the rules that govern which bases and modulo exist
+          for which path length, we haven't solved the original problem: all we'll have shown is that for
+          certain path lengths, there are Collatz numbers. Unless we can also prove that as we go up in
+          path length, we generate ℕ, this avenue is interesting, but in terms of proving the Collatz
+          conjecture, fruitless.</p>
+      </section>
 
-        <p>Do these modulations make sense?</p>
+      <section>
+        <h2>Collatz Conjecture status: still deep magic.</h2>
+      </section>
 
-<pre> 5: mod 12 x 1
- 8: mod 12 x 4
-10: mod 12 x 8
-13: mod 12 x 32
-15: mod 12 x 64
-18: mod 12 x 256
-21: mod 12 x 1024
-23: mod 12 x 2048
-26: mod 12 x 8192
-</pre>
 
-        <p>sort of? but where are 2, 16, 128, 512, 4096 etc? Where are these gaps coming from?</p>
+<!--
+      <section>
+        <h2>Deriving the modulations</h2>
+
+        <p>Let's look at this from another angle. Let's have a look at why we get those path lengths, by figuring out which path lengths necessitate which inputs.<p>
+
+<h3>path length 1</h3>
+
+        <p>Let's think about this mathematically: there must be a some number <b>n</b>, even or odd, which --when Collatz procedure'd-- generates an integer number <b>m</b> &lt <b>n</b>. Let's look at both cases, first even cases:</p>
+
+        <p>\[\begin{align}
+          n &⇒ \frac{n}{2} &lt; n, n \equiv 2 \ mod\ 2
+        \end{align}\]</p>
+
+        <p>This is trivially true given the rules of arithmetic. Moving on to odd inputs:</p>
+
+        <p>\[\begin{align}
+          n &⇒ 3 n + 1 &lt; n, n \equiv 1 \ mod\ 2 \\
+            &⇒ 3 n &lt; n-1, n \equiv 1 \ mod\ 2 \\
+            &⇒ n &lt; \frac{n-1}{3}, n \equiv 1 \ mod\ 2
+        \end{align}\]</p>
+
+        <p>There is no integer <b>n</b> that will satisfy these relationships, and so there are no paths of length 1 for any odd number.<p>
+
+<h3>path length 2</h3>
+
+        <p>numbers that lead to a lower integer in 2 steps only need to come from odd <b>n</b>, because even numbers have path length 1,
+          and we know the after the first step, the odd <b>n</b> will be an even number (by definition due to the Collatz procedure), and
+          thus step 2 must necessarily be a division by 2:<p>
+
+        <p>\[\begin{align}
+          n &→ 3 n + 1 ⇒ \frac{3 n + 1}{2} &lt; n, 3 n + 1 \equiv 1 \ mod\ 2 \\
+            &⇒ 3 n + 1 &lt; 2n, 3 n \equiv 0 \ mod\ 2 \equiv 2 \ mod\ 2 \\
+            &⇒ 3 n &lt; 2n - 1, n \equiv \frac{2}{3} \ mod\ \frac{2}{3} \\
+            &⇒ 3 n &lt; 2n - 1, n \equiv 2 \ mod\ 2\ (due\ to\ needing\ to\ be\ integer)
+        \end{align}\]</p>
+
+        <p>Even if the equivalence can be met (which would mean there aren't actually any odd numbers for which there is path length 2, as
+          <b>n</b> must be <b>2 mod 2</b>, which means it's even) that inequality requirement is impossible to fulfil. There are no numbers
+          for which we can find a lower integer in 2 steps.</p>
+
+<h3>path length 3</h3>
+
+        <p>This is an odd path length, and we start with an odd number <b>n</b> (because even numbers are sorted already), and we <em>must</em>
+          make this even as first step (due to the Collatz procedure), and then there are two possibilities: dividing this number by 2 will
+          either yield an odd, or even number, either of which must be smaller than our starting <b>n</b>. So:</p>
+
+        <p>\[\begin{align}
+          n &→ 3 n + 1 → \frac{3 n + 1}{2} ⇒
+               \frac{3 n + 1}{4} &lt; n, \frac{3 n + 1}{2} \equiv 2 \ mod\ 2
+               \cap
+               3 \frac{3 n + 1}{2} +1 &lt; n, \frac{3 n + 1}{2} \equiv 1 \ mod\ 2 \\
+            &⇒ 3 n + 1 &lt; 4 n, 3 n + 1 \equiv 4 \ mod\ 4
+                \cap
+                \frac{3 n + 1}{2} &lt; \frac{n - 1}{3}, \frac{3 n + 1}{2} \equiv 1 \ mod\ 2 \\
+            &⇒ 3 n &lt; 4 n - 1, 3 n \equiv 3 \ mod\ 4
+                \cap
+                \frac{3 n + 1}{2} &lt; \frac{n - 1}{3}, \frac{3 n + 1}{2} \equiv 1 \ mod\ 2 \\
+            &⇒ 3 n &lt; 4 n - 1, n \equiv 1 \ mod\ \frac{4}{3}
+                \cap
+                3 n + 1 &lt; 2 \frac{n - 1}{3}, 3 n + 1 \equiv 2 \ mod\ 4 \\
+            &⇒ 3 n &lt; 4 n - 1, n \equiv 5 \ mod\ 4\ (because\ n\ must\ be\ integer\ and\ over\ 1)
+                \cap
+                3 n &lt; 2 \frac{n - 1}{3} + \frac{3}{3}, 3 n \equiv 1 \ mod\ 4 \\
+            &⇒ n \equiv 5 \ mod\ 4
+                \cap
+                n &lt; 2n + 1, n \equiv \frac{1}{3} \ mod\ \frac{4}{3} \\
+            &⇒ n \equiv 5 \ mod\ 4
+                \cap
+                n &lt; 2n + 1, n \equiv 1 \ mod\ 4\ (to\ be\ integer)
+        \end{align}\]</p>
+
+        <p>We find <b>n ≡ 5 mod 4</b> and <b>n ≡ 1 mod 4</b>, but we already know that <b>n=1</b> is ruled out
+          by the basic rules of the Collatz procedure, so we simply see <b>n ≡ 5 mod 4</b> as the only solution
+          for this path length.</p>
+
+        <p>According to this, 5, 9, 13, 17, etc. should all lead to a lower number in 3 steps, and they do.</p>
+
+<h3>path length 4</h3>
+
+        <p>Again we must start with an odd <b>n</b>, which generates three possible scenarios tracks:
+          1) odd -> even -> even -> even, 2) odd -> even -> even -> odd, 3) odd -> even -> odd -> even.
+          The reason it's only three is that an odd number can only ever become even, so we can never
+          have an [odd -> odd] subpattern.</p>
+
+        <h4>odd -> even -> even -> even</h4>
+
+        <p>\[\begin{align}
+          n &→ 3 n + 1 → \frac{3 n + 1}{2} → \frac{3 n + 1}{4} ⇒ \frac{3 n + 1}{8} &lt; n,  \frac{3 n + 1}{4} \equiv 2\ mod\ 2 \\
+            &⇒ 3 n + 1 &lt; 8 n, 3 n + 1 \equiv 8\ mod\ 8 \\
+            &⇒ 3 n &lt; 8 n - 1, 3 n \equiv 7\ mod\ 8 \\
+            &⇒ 3 n &lt; 8 n - 1, n \equiv \frac{7}{3}\ mod\ \frac{8}{3} \equiv 5\ mod\ 8 \\
+            &⇒ -5 n &lt; - 1, n \equiv 5\ mod\ 8 \\
+            &⇒ 5 n &gt; 1, n \equiv 5\ mod\ 8 \\
+            &⇒ n &gt; \frac{1}{5}, n \equiv 5\ mod\ 8
+        \end{align}\]</p>
+
+        <p>For any <b>n</b> greater than 1 the inequality holds, and for these <b>n</b>, solutions are of the form <b>5 mod 8</b>,
+          which is "meaningless" in that it overlaps with path length 3. However, it does tell us that 5, 13, 21, etc should <em>also</em>
+          have a value <b>m &lt; n</b> after 4 steps:</p>
+
+        <pre> 5: 16, 8, 4, 2, 1
+ 9: 28, 14, 7, 22, 11, 34, 17, ...
+13: 40, 20, 10, 5, 16, 8, 4, 2, 1
+17: 52, 26, 13, 40, 20, 10, 5, ...
+21: 64, 32, 16, 8, 4, 2, 1
+25: 76, 38, 19, 58, 29, 88, 44, ...
+29: 88, 44, 22, 11, 34, 17, 52, ...
+33: 100, 50, 25, 76, 38, 19, 58, ...
+37: 112, 56, 28, 14, 7, 22, 11, ...
+41: 124, 62, 31, 94, 47, 142, 71, ...
+45: 136, 68, 34, 17, 52, 26, 13, ...</pre>
+
+        <p>Indeed, <b>5 mod 8</b> not only shows <b>m &lt; n</b> in three steps, but also four steps, whereas <b>9 mod 8</b> shows
+          all paths of length 4 to have an <b>m &gt; n</b>. So that's one of three cases examined. On to the next:</p>
+
+        <h4>odd -> even -> even -> odd</h4>
+
+        <p>\[\begin{align}
+          n &→ 3 n + 1 → \frac{3 n + 1}{2} → \frac{3 n + 1}{4} ⇒ 3 \frac{3 n + 1}{4} + 1 &lt; n,  \frac{3 n + 1}{4} \equiv 2\ mod\ 2 \\
+            &⇒ \frac{9n + 7}{4} &lt; n, (already\ solved\ equivalence) \\
+            &⇒ 9n + 7 &lt; 4 n \\
+            &⇒ 5n &lt; -7 \\
+        \end{align}\]</p>
+
+        <p>This has no solutions in the positive integer domain: <b>n</b> would have to be negative for this inequality to hold.</p>
+
+        <h4>odd -> even -> odd -> even</h4>
+
+        <p>\[\begin{align}
+          n &→ 3 n + 1 → 3 \frac{3 n + 1}{2} + 1 → ⇒ \frac{9 n + 5}{4} + 1 &lt; n,  \frac{9 n + 5}{2} \equiv 1\ mod\ 2 \\
+            &⇒ \frac{9n + 5}{4} &lt; n, 9n + 5 \equiv 2\ mod\ 4 \\
+            &⇒ 9n + 5 &lt; 4 n, 9n \equiv 1\ mod\ 4 \\
+            &⇒ 5n &lt; -5, n \equiv \frac{1}{9}\ mod\ \frac{4}{9} \equiv 1\ mod\ 4
+        \end{align}\]</p>
+
+        <p>This has no solutions in the positive integer domain: <b>n</b> would have to be negative for this inequality to hold.</p>
+
+<h3>path length 5</h3>
+
+        <p>Sparing you this math, there are no new solutions for paths of length 5 (although there are some overlaps with previously found
+          solutions in ways that mean solutions with path length 5 are already covered by path length 3 and 4).</p>
+
+<h3>path length 6</h3>
+
+        <p>This should yield a new result (namely, <b>3 mod 16</b>) so let's see if our approach holds up. First off, there are eight
+          possible paths of length 6. That's starting to get a bit rich. Still, let's look at each of them:</p>
+
+    <h4>odd -> even -> even -> even -> even -> even</h4>
+
+        <p>We start with an odd number, which becomes even, and then stays even for the remainder of the path. If we take this series,
+        what must <b>n</b> be?</p>
+
+        <p>\[\begin{align}
+          n &→ 3 n + 1 → \frac{3 n + 1}{2} → \frac{3 n + 1}{4} → \frac{3 n + 1}{8} → \frac{3 n + 1}{16} ⇒ \frac{3 n + 1}{32} \\
+            &⇒  \frac{3 n + 1}{32} &lt; n, \frac{3 n + 1}{16} \equiv 2\ mod\ 2 \\
+            &⇒  3 n + 1 &lt; 32 n, 3 n + 1 \equiv 32\ mod\ 32 \\
+            &⇒  29 n &gt; 1, 3 n \equiv 31\ mod\ 32 \\
+            &⇒  29 n &gt; 1, n \equiv \frac{31}{3}\ mod\ \frac{32}{3} \\
+            &⇒  n &gt; \frac{1}{29}, n \equiv 21\ mod\ 32
+        \end{align}\]</p>
+
+        <p>This solution is already contained by <b>5 mod 4</b>.</p>
+
+    <h4>odd -> even -> even -> even -> odd -> even</h4>
+
+        <p>\[\begin{align}
+          n &→ 3 n + 1 → \frac{3 n + 1}{2} → \frac{3 n + 1}{4} → \frac{3 n + 1}{8} → \frac{9 n + 11}{8} ⇒ \frac{9 n + 11}{16} \\
+            &⇒ \frac{9 n + 11}{16} &lt; n, \frac{9 n + 11}{8} \equiv 2\ mod\ 2 \\
+            &⇒ 9 n + 11 &lt; 16n, 9 n + 11 \equiv 16\ mod\ 16 \\
+            &⇒ 7 n &gt; 11, 9 n \equiv 5\ mod\ 16 \\
+            &⇒ n &gt; \frac{11}{7}, n \equiv \frac{5}{9}\ mod\ \frac{16}{9} \equiv 13\ mod\ 16
+        \end{align}\]</p>
+
+        <p>This solution is also contained by <b>5 mod 4</b>.</p>
+
+    <h4>odd -> even -> even -> even -> even -> odd</h4>
+
+        <p>\[\begin{align}
+          n &→ 3 n + 1 → \frac{3 n + 1}{2} → \frac{3 n + 1}{4} → \frac{3 n + 1}{8} → \frac{3 n + 1}{16} ⇒ \frac{9 n + 19}{16} \\
+            &⇒ \frac{9 n + 19}{16} &lt; n, \frac{3 n + 1}{16} \equiv 1\ mod\ 2 \\
+            &⇒ 9 n + 19 &lt; 16n, 3 n + 1 \equiv 16\ mod\ 32 \\
+            &⇒ 7 n &gt; 19, 3 n \equiv 15\ mod\ 32 \\
+            &⇒ n &gt; \frac{19}{7}, n \equiv 5\ mod\ \frac{32}{3} \equiv 5\ mod\ 32
+        \end{align}\]</p>
+
+        <p>This solution is also contained by <b>5 mod 4</b>.</p>
+
+    <h4>odd -> even -> even -> odd -> even -> odd</h4>
+
+        <p>\[\begin{align}
+          n &→ 3 n + 1 → \frac{3 n + 1}{2} → \frac{3 n + 1}{4} → \frac{9 n + 7}{4} → \frac{9 n + 7}{8} ⇒ \frac{27 n + 29}{8} \\
+            &⇒ \frac{27 n + 29}{8} &lt; n, \frac{9 n + 7}{8} \equiv 1\ mod\ 2 \\
+            &⇒ 27 n + 29 &lt; 8 n, 9 n + 7 \equiv 8\ mod\ 16 \\
+            &⇒ 19 n &lt; -29, 9 n \equiv 1\ mod\ 16 \\
+            &⇒ n &lt; \frac{-29}{19}, n \equiv \frac{1}{9}\ mod\ \frac{16}{9} \equiv 9\ mod\ 16
+        \end{align}\]</p>
+
+        <p>There are no solutions for this path, since we'd need a negative <b>n</b>.</p>
+
+    <h4>odd -> even -> odd -> even -> even -> even</h4>
+
+        <p>\[\begin{align}
+          n &→ 3 n + 1 → \frac{3 n + 1}{2} → \frac{9 n + 5}{2} → \frac{9 n + 5}{4} → \frac{9 n + 5}{8} ⇒ \frac{9 n + 5}{16} \\
+            &⇒ \frac{9 n + 5}{16} &lt; n, \frac{9 n + 5}{8} \equiv 2\ mod\ 2 \\
+            &⇒ 9 n + 5 &lt; 16 n, 9 n + 5 \equiv 16\ mod\ 16 \\
+            &⇒ 7 n &gt; 5, 9 n \equiv 11\ mod\ 16 \\
+            &⇒ n &gt; \frac{5}{7}, n \equiv \frac{11}{9}\ mod\ \frac{16}{9} \equiv 3\ mod\ 16
+        \end{align}\]</p>
+
+        <p>And there is our <b>3 mod 16</b> solution.</p>
+
+    <h4>odd -> even -> odd -> even -> even -> odd</h4>
+
+        <p>\[\begin{align}
+          n &→ 3 n + 1 → \frac{3 n + 1}{2} → \frac{9 n + 5}{2} → \frac{9 n + 5}{4} → \frac{9 n + 5}{8} ⇒ \frac{27 n + 23}{8} \\
+            &⇒ \frac{27 n + 23}{8} &lt; n, \frac{9 n + 5}{8} \equiv 2\ mod\ 2 \\
+            &⇒ 27 n + 23 &lt; 16 n, (n \equiv same\ as\ above) \\
+            &⇒ 11 n &lt; -23 \\
+            &⇒ n &lt; \frac{-23}{11}
+        \end{align}\]</p>
+
+        <p>There are no solutions for this path, since we'd need a negative <b>n</b>.</p>
+
+    <h4>odd -> even -> odd -> even -> odd -> even</h4>
+
+        <p>\[\begin{align}
+          n &→ 3 n + 1 → \frac{3 n + 1}{2} → \frac{9 n + 5}{2} → \frac{9 n + 5}{4} → \frac{27 n + 19}{4} ⇒ \frac{27 n + 19}{8} \\
+            &⇒ \frac{27 n + 19}{8} &lt; n, \frac{27 n + 19}{4} \equiv 2\ mod\ 2 \\
+            &⇒ 27 n + 19 &lt; 8 n, 27 n + 19 \equiv 8\ mod\ 8 \\
+            &⇒ 19 n &lt; -19, 27 n + 19 \equiv -11\ mod\ 8 \equiv 5\ mod\ 8 \\
+            &⇒ n &lt; -1, n \equiv \frac{5}{27}\ mod\ \frac{8}{27} \equiv 7\ mod\ 8\\
+        \end{align}\]</p>
+
+        <p>There are no solutions for this path, since we'd need a negative <b>n</b>.</p>
+
+    <h4>In conclusion</h4>
+
+        <p>So there is one (new) numerical sequence that lives up to the Collatz conjecture in six steps.</p>
 
       </section>
 
+      <section>
+        <h2>Can we capture this behaviour in (hopefully simple) rules?</h2>
+      </section>
+-->
 
       <footer id="copyright">
         This article is © 2014 to me, Mike "Pomax" Kamermans, but any code used and linked
@@ -299,6 +557,7 @@
       </footer>
     </article>
 
+    <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
 
   </body>
 </html>
