@@ -3,170 +3,17 @@
   <head>
     <meta charset="utf-8">
     <title>The Collatz conjecture</title>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.0/JSXTransformer.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.0/react.js"></script>
-
     <script type="text/x-mathjax-config">MathJax.Hub.Config({ tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]} });</script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.5.1/MathJax.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.5.1/config/TeX-AMS_HTML.js"></script>
+    <link rel="stylesheet" href="collatz.css">
 
-    <style>
-      table {
-        border-collapse: collapse;
-        background: #EEF2EA;
-      }
-      thead th {
-        border: 1px solid black;
-        border-width: 1px 0;
-        font-weight: bold;
-      }
-      td {
-        text-align: right;
-        padding: 0 8px;
-        margin: 0;
-      }
-      table tr:last-child td {
-        border-bottom: 1px solid black;
-      }
-      table tr:last-child td.back {
-        border: 1px solid black;
-        border-width: 1px 0;
-        text-align: left;
-        cursor: pointer;
-        font-weight: bold;
-      }
-      .clickable {
-        cursor: pointer;
-      }
-      .leading {
-        background: rgba(0,255,0,0.1);
-      }
-      .terminal {
-        background: rgba(0,255,255,0.1);
-      }
-      .divthree {
-        background: rgba(0,0,255,0.1);
-      }
-      .divthree.terminal {
-        background: rgba(0,0,155,0.2);
-      }
-    </style>
-
-    <script>
-      // get the page parameters
-      var params = (function() {
-        var params = {};
-        var getParams = function(v) { var t = v.split('='); params[t[0]] = t[1]; };
-        window.location.search.replace('?','').split('&').map(getParams);
-        return params;
-      }());
-
-      // Simpler "to the power" function
-      function pow(n, p) {
-        if(p==0)
-          return 1;
-        return n * pow(n, p-1);
-      }
-
-      // inverse collatz sequencer
-      function icollatz(value) {
-        value = (value-1)/3;
-        if(value===Math.floor(value)) return value;
-        return false;
-      }
-
-      // inverse collatz base sequence and followups computer
-      function generateSequence(base, limit) {
-        base = parseInt(base,10);
-        limit = limit || 20;
-        var sequence = [base],
-            b = limit;
-        for (b=0; b<limit; b++) {
-          if (b>0) {
-            sequence[b] = 2*sequence[b-1];
-          }
-        }
-        return sequence;
-      }
-    </script>
-
-    <script type="text/jsx">
-      // A React component that can generate us our triangles
-      CollatzMatrix = React.createClass({
-        getInitialState: function() {
-          return {
-            value: this.props.value,
-            limit: this.props.limit,
-            history: []
-          };
-        },
-        render: function() {
-          var sequence = generateSequence(this.state.value, this.state.limit);
-          var rows = this.generateRows(sequence);
-
-          var history = this.state.history;
-          var len = history.length;
-          var back = len > 0 ? <tr><td className="back" colSpan={sequence.length} onClick={this.back}>back to {history[len-1]}</td></tr> : false;
-
-          var head = <thead>{rows.slice(0,1)}</thead>;
-          var body = <tbody>{rows.slice(1)}{back}</tbody>;
-          return (<table>{head}{body}</table>);
-        },
-        generateRows: function(sequence) {
-          var generateColumns = this.generateColumns;
-
-          var rows = [ generateColumns(sequence, true) ];
-          var len = sequence.length;
-          var empties = (new Array(len)).join(',').split(',').map(function(){ return <td/>; });
-
-          for(var i=0; i<len; i++) {
-            var nval = icollatz(sequence[i]);
-            if(nval!==false) {
-              var cols = generateColumns(generateSequence(nval, this.props.limit));
-              if(i > 0) { cols = empties.slice(0,i).concat(cols.slice(0,-i)); }
-              rows.push(cols);
-            }
-          }
-
-          return rows.map(function(content, idx) {
-            return <tr>{content}</tr>;
-          });
-        },
-        generateColumns: function(arr, thead) {
-          var onclick = this.changeValue;
-          return arr.map(function(v, idx) {
-            var href = "?v=" + v;
-            var attr = { className: "clickable", onClick: onclick };
-
-            if (idx===0) {
-              attr.className += " leading";
-              var nval = (v-1)/3;
-              if (nval !== Math.floor(nval)) { attr.className += " terminal"; }
-            }
-            if (v%3===0) { attr.className += " divthree"; }
-
-            if(thead) { return <th {...attr}>{v}</th>; }
-            return <td {...attr}>{v}</td>;
-          });
-        },
-        changeValue: function(evt) {
-          this.setState({
-            history: this.state.history.concat([this.state.value]),
-            value: parseInt(evt.target.innerHTML, 10)
-          });
-        },
-        back: function() {
-          var history = this.state.history;
-          var len = history.length;
-          if(len>0) {
-            var popped = history[len-1];
-            history = history.slice(0,len-1);
-            this.setState({ history: history, value: popped });
-          }
-        }
-      });
-    </script>
+    <script src="collatz.js"></script>
+    <script type="text/jsx" src="CollatzMatrix.jsx"></script>
+    <script type="text/jsx" src="CollatzPaths.jsx"></script>
+    <script type="text/jsx" src="CollatzModulos.jsx"></script>
   </head>
   <body>
 
@@ -184,6 +31,37 @@
 
     <p>The conjecture is that this procedure will always end up at the number 1, no matter which initial $n$ was picked. We can rephrase this conjecture to an equivalent statement, by conjecting that this procedure will always lead to a number $m$ that is strictly smaller than $n$, in a finite number of steps.</p>
 
+<h1>The generalized Collatz Conjecture</h1>
+
+    <p>Taking the generalization, is there a pattern we can find the path lenghts to go from $n$ to $m$? Let's find out.</p>
+
+    <pre id="generalized-1"></pre><script type="text/jsx">
+      (function() {
+        var pre = document.getElementById('generalized-1');
+        var value = params.path || 1;
+        var element = <CollatzPaths value={value} limit="100" />;
+        React.render(element, pre);
+      }());
+    </script>
+
+    <p>There's a few really interesting observations we can make here. For one, while the path length from $n$ to 1 might be very long indeed, the length to get to some number smaller than the starting number can be very short indeed. Ignoring the evening numbers, which by the very definition of the Collatz rules always yield a smaller number in a single step, we see that numbers of the form $4 \cdot m + 1$ seem to have path length 3 (a proof for this exists on some paper on my desk, I'll eventually add that here).
+
+    <p>So, if $4m+1$ is also path length 3, and we can prove similar things about $16m+3$ having path length 6, and $32m+11$ always has length 8, can we say something about "which modular formulae exist given a path length $x$"? If we can, perhaps we come up with a proof where, starting with the Collatz rules, we end up necessarily generating all numbers in ℕ. So, what do we see when we look at the various path lengths?</p>
+
+    <pre id="generalized-2"></pre><script type="text/jsx">
+      (function() {
+        var pre = document.getElementById('generalized-2');
+        var value = params.mod || 3;
+        var element = <CollatzModulos value={value} limit="30" />;
+        React.render(element, pre);
+      }());
+    </script>
+
+    <p>Do these modulations make sense? They look like powers of two, but that they're not really regular. Where are 64 or 512 or 2048, for instance?</p>
+
+    <p>What about the base numbers? The first few look like they might all be primes, but the 15 and 39 show that's not true either.</p>
+
+    <p>Another problem is that even if we can find the rules that govern which bases and modulo exist for which path length, we haven't solved the original problem: all we'll have shown is that for certain path lengths, there are Collatz numbers. Unless we can also prove that as we go up in path length, we generate ℕ, this avenue is rather interesting, but in terms of proving the Collatz conjecture, quite likely fruitless.</p>
 
 <h1>The inverted Collatz Conjecture</h1>
 
@@ -206,7 +84,7 @@
     <pre id="invert-1"></pre><script type="text/jsx">
       (function() {
         var pre = document.getElementById('invert-1');
-        var value = params.v || 1;
+        var value = params.base || 1;
         var element = <CollatzMatrix value={value} limit="45" />;
         React.render(element, pre);
       }());
